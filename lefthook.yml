@@ -1,0 +1,6 @@
+pre-push:
+  skip:
+    - ref: turbo/*
+  jobs:
+    - name: check
+      run: make check
