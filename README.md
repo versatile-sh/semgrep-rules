@@ -43,8 +43,8 @@ semgrep-rules is a single file, [`rules/versatile.yml`](rules/versatile.yml), th
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/diagram-flow-dark.svg">
-  <img src="docs/assets/diagram-flow-light.svg" alt="How the gate runs. Your repository's check command calls semgrep with the registry packs for its languages and this repository's rules file, pinned to a tag. Semgrep compares the result with the merge base of origin/main and fails only on findings the branch adds." width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/diagram-gate-dark.svg">
+  <img src="docs/assets/diagram-gate-light.svg" alt="How the gate runs. Your repository&#x27;s check command, also run before a push, calls semgrep. Semgrep loads the registry packs for your languages and this repository&#x27;s rules file pinned to a tag. It takes the merge base with origin/main as the baseline, so only findings the branch adds count. With --error, any new WARNING or ERROR fails the check." width="100%">
 </picture>
 
 1. The repository's check command (and so its pre-push hook) runs its `semgrep` target.

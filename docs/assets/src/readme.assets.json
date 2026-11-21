@@ -1,44 +1,144 @@
 {
   "name": "semgrep-rules",
-  "pitch": ["One Semgrep gate for ", "every repository", "."],
+  "pitch": [
+    "One Semgrep gate for ",
+    "every repository",
+    "."
+  ],
   "sub": "Shared security rules, pinned by tag, checked so nothing gets worse.",
   "badge": "MIT",
-  "tags": ["9 rules", "Go · TypeScript · Python · Rust", "pinned by tag", "baseline gate", "no login"],
+  "tags": [
+    "9 rules",
+    "Go · TypeScript · Python · Rust",
+    "pinned by tag",
+    "baseline gate",
+    "no login"
+  ],
   "heroLabel": "semgrep-rules: one Semgrep gate for every repository. Shared security rules, pinned by tag, checked so nothing gets worse.",
   "sections": [
-    ["what-it-is", "overview", "What it ", "is"],
-    ["how-it-works", "overview", "How it ", "works"],
-    ["quick-start", "start here", "Quick ", "start"],
-    ["usage", "use", "The ", "rules"],
-    ["configuration", "configure", "Packs per ", "language"],
-    ["development-and-tests", "develop", "Development and ", "tests"],
-    ["security-notes", "project", "Security ", "notes"],
-    ["contributing", "project", "", "Contributing"],
-    ["license", "project", "", "License"]
+    [
+      "what-it-is",
+      "overview",
+      "What it ",
+      "is"
+    ],
+    [
+      "how-it-works",
+      "overview",
+      "How it ",
+      "works"
+    ],
+    [
+      "quick-start",
+      "start here",
+      "Quick ",
+      "start"
+    ],
+    [
+      "usage",
+      "use",
+      "The ",
+      "rules"
+    ],
+    [
+      "configuration",
+      "configure",
+      "Packs per ",
+      "language"
+    ],
+    [
+      "development-and-tests",
+      "develop",
+      "Development and ",
+      "tests"
+    ],
+    [
+      "security-notes",
+      "project",
+      "Security ",
+      "notes"
+    ],
+    [
+      "contributing",
+      "project",
+      "",
+      "Contributing"
+    ],
+    [
+      "license",
+      "project",
+      "",
+      "License"
+    ]
   ],
   "diagrams": [
     {
-      "slug": "flow",
-      "label": "How the gate runs. Your repository's check command calls semgrep with the registry packs for its languages and this repository's rules file, pinned to a tag. Semgrep compares the result with the merge base of origin/main and fails only on findings the branch adds.",
+      "slug": "gate",
+      "kind": "pipeline",
+      "why": "The gate is four ordered steps of one scan, and its point is the baseline step that keeps old findings out, so a pipeline shows it.",
+      "label": "How the gate runs. Your repository's check command, also run before a push, calls semgrep. Semgrep loads the registry packs for your languages and this repository's rules file pinned to a tag. It takes the merge base with origin/main as the baseline, so only findings the branch adds count. With --error, any new WARNING or ERROR fails the check.",
+      "gap": 64,
       "cards": [
         {
-          "title": "Your repo",
+          "title": "check",
           "sub": "make check",
-          "rows": ["semgrep target", ["pre-push hook", "muted"], ["merge base", "muted"]]
+          "rows": [
+            "semgrep target",
+            [
+              "pre-push too",
+              "muted"
+            ]
+          ]
         },
         {
-          "title": "semgrep",
-          "sub": "--baseline-commit",
-          "weight": 1.4,
-          "rows": [["p/default · p/secrets", "accent"], "p/golang · p/typescript", "p/react · p/rust", "rules/versatile.yml@vX"]
+          "title": "load",
+          "sub": "rules",
+          "rows": [
+            "p/default",
+            "p/secrets",
+            "per language",
+            [
+              "versatile.yml",
+              "accent"
+            ]
+          ]
         },
         {
-          "title": "Results",
-          "sub": "fail the check",
-          "rows": ["new findings", ["old debt ignored", "muted"]]
+          "title": "baseline",
+          "sub": "merge base",
+          "rows": [
+            "origin/main",
+            [
+              "old debt out",
+              "muted"
+            ]
+          ]
+        },
+        {
+          "title": "gate",
+          "sub": "--error",
+          "rows": [
+            [
+              "new findings",
+              "accent"
+            ],
+            "WARNING, ERROR",
+            "--metrics=off"
+          ]
         }
       ],
-      "arrows": [{ "label": "scan" }, { "label": "new", "accent": true }]
+      "arrows": [
+        {
+          "label": ""
+        },
+        {
+          "label": ""
+        },
+        {
+          "label": "new",
+          "accent": true
+        }
+      ]
     }
   ]
 }
