@@ -76,7 +76,7 @@ description = "Semgrep on the new findings since the merge base"
 run = """
 semgrep scan --metrics=off --disable-version-check --error --severity WARNING --severity ERROR \
   --config p/default --config p/secrets --config p/golang \
-  --config https://raw.githubusercontent.com/versatile-sh/semgrep-rules/v0.1.2/rules/versatile.yml \
+  --config https://raw.githubusercontent.com/versatile-sh/semgrep-rules/v0.2.0/rules/versatile.yml \
   --baseline-commit "$(git merge-base HEAD origin/main)"
 """
 ```
@@ -98,6 +98,7 @@ To see the whole debt, run the same command without `--baseline-commit`.
 | `unsanitized-dangerously-set-inner-html-js` | TypeScript, JavaScript | `dangerouslySetInnerHTML` with a value no sanitizer call wraps | Wrap it in `DOMPurify.sanitize(...)` (or `sanitize`, `sanitizeHtml`) at the call, or render text |
 | `shell-string-exec-go`, `-js`, `-py`, `-rs` | Go, TypeScript, JavaScript, Python, Rust | A shell (`sh -c`, `exec`, `shell: true`, `shell=True`) running a string built at runtime | Run the program directly with an argument list |
 | `logged-request-secrets-go`, `-js` | Go, TypeScript, JavaScript | A logger call that receives a request's whole headers, one header value, or the body | Log the fields you need |
+| `view-transition-without-flush-sync-js` | TypeScript, JavaScript | In a module that imports `react` or `react-dom`, `startViewTransition` with an inline callback that neither calls `flushSync` nor waits on a promise, so React commits after the new snapshot and the page jumps at the end | Prefer a CSS-only swap (`data-theme` on the root, CSS variables, no React state); if React state must change, `startViewTransition(() => flushSync(() => setTheme(next)))` |
 
 Reading environment variables outside the composition root is not here: [go-lint](https://github.com/versatile-sh/go-lint) owns it.
 

@@ -203,3 +203,33 @@ rules:
       - metavariable-regex:
           metavariable: $REQ
           regex: ^(req|request|r|ctx\.req|c\.req|ctx\.request|event)$
+
+  - id: view-transition-without-flush-sync-js
+    message: A view transition in a React module changes the page without flushSync, so if React state changes, React commits after the browser takes the new snapshot and the page jumps when the transition ends. Prefer a CSS-only swap (set an attribute such as data-theme on the root and let CSS variables restyle the page, with no React state). If React state must change, wrap it in flushSync inside the callback, for example startViewTransition(() => flushSync(() => setTheme(next))).
+    severity: WARNING
+    languages: [typescript, javascript]
+    metadata:
+      category: correctness
+    patterns:
+      - pattern-either:
+          - pattern-inside: |
+              import $M from "$PKG"
+              ...
+          - pattern-inside: |
+              import { ... } from "$PKG"
+              ...
+          - pattern-inside: |
+              import * as $M from "$PKG"
+              ...
+          - pattern-inside: |
+              import $M, { ... } from "$PKG"
+              ...
+      - metavariable-regex:
+          metavariable: $PKG
+          regex: ^react(-dom(/client)?)?$
+      - pattern-either:
+          - pattern: $DOC.startViewTransition($CB, ...)
+          - pattern: startViewTransition($CB, ...)
+      - metavariable-regex:
+          metavariable: $CB
+          regex: ^(?![\s\S]*\b(flushSync\s*\(|new\s+Promise\b|await\b))(\{[\s\S]*\bupdate\s*:\s*)?(async\s+)?(function\b|\(|[A-Za-z_$][\w$]*\s*=>)
