@@ -71,7 +71,7 @@ semgrep --version
 Add a target to the repository's check command. A Go repository with a Makefile:
 
 ```make
-SEMGREP_RULES := https://raw.githubusercontent.com/versatile-sh/semgrep-rules/v0.1.0/rules/versatile.yml
+SEMGREP_RULES := https://raw.githubusercontent.com/versatile-sh/semgrep-rules/v0.1.2/rules/versatile.yml
 
 semgrep:
 	semgrep scan --metrics=off --disable-version-check --error --severity WARNING --severity ERROR \
@@ -92,7 +92,7 @@ To see the whole debt, run the same command without `--baseline-commit`.
 
 | Rule | Languages | Reports | Fix |
 | --- | --- | --- | --- |
-| `hardcoded-credential-go`, `-js` | Go, TypeScript, JavaScript | A string of 16 or more key-like characters assigned to a name that says secret, token, password, API key, private key or credential | Read the value from configuration at runtime |
+| `hardcoded-credential-go`, `-js` | Go, TypeScript, JavaScript | A string of 16 or more key-like characters, letters and digits mixed, assigned to a name that says secret, token, password, API key, private key or credential | Read the value from configuration at runtime |
 | `unsanitized-dangerously-set-inner-html-js` | TypeScript, JavaScript | `dangerouslySetInnerHTML` with a value no sanitizer call wraps | Wrap it in `DOMPurify.sanitize(...)` (or `sanitize`, `sanitizeHtml`) at the call, or render text |
 | `shell-string-exec-go`, `-js`, `-py`, `-rs` | Go, TypeScript, JavaScript, Python, Rust | A shell (`sh -c`, `exec`, `shell: true`, `shell=True`) running a string built at runtime | Run the program directly with an argument list |
 | `logged-request-secrets-go`, `-js` | Go, TypeScript, JavaScript | A logger call that receives a request's whole headers, one header value, or the body | Log the fields you need |

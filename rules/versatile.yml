@@ -17,10 +17,10 @@ rules:
               $STRUCT{..., $NAME: "$VALUE", ...}
       - metavariable-regex:
           metavariable: $NAME
-          regex: (?i).*(secret|token|passw(or)?d|api_?key|private_?key|client_?secret|credential).*
+          regex: (?i)^(?!.*(alphabet|charset|chars|header|path|url|env|name|scopes?|field|prefix|suffix|format|pattern|kind|type|id)$).*(secret|token|passw(or)?d|api_?key|private_?key|client_?secret|credential).*
       - metavariable-regex:
           metavariable: $VALUE
-          regex: ^[A-Za-z0-9+/_=.\-]{16,}$
+          regex: ^(?!/)(?![a-z][a-z0-9]*(?:[_-][a-z0-9]+)+$)(?=[^0-9]*[0-9])(?=[^A-Za-z]*[A-Za-z])[A-Za-z0-9+/_=\-]{16,}$
 
   - id: hardcoded-credential-js
     message: A credential is written into the source. Read it from configuration at runtime and keep the value in a secret manager.
@@ -38,10 +38,10 @@ rules:
           - pattern: "{..., $NAME: '$VALUE', ...}"
       - metavariable-regex:
           metavariable: $NAME
-          regex: (?i).*(secret|token|passw(or)?d|api_?key|private_?key|client_?secret|credential).*
+          regex: (?i)^(?!.*(alphabet|charset|chars|header|path|url|env|name|scopes?|field|prefix|suffix|format|pattern|kind|type|id)$).*(secret|token|passw(or)?d|api_?key|private_?key|client_?secret|credential).*
       - metavariable-regex:
           metavariable: $VALUE
-          regex: ^[A-Za-z0-9+/_=.\-]{16,}$
+          regex: ^(?!/)(?![a-z][a-z0-9]*(?:[_-][a-z0-9]+)+$)(?=[^0-9]*[0-9])(?=[^A-Za-z]*[A-Za-z])[A-Za-z0-9+/_=\-]{16,}$
 
   - id: unsanitized-dangerously-set-inner-html-js
     message: dangerouslySetInnerHTML renders a value that no sanitizer wrapped. Pass it through a sanitizer such as DOMPurify.sanitize at this call, or render text instead of HTML.
@@ -62,6 +62,8 @@ rules:
             - pattern-not: sanitize(...)
             - pattern-not: sanitizeHtml(...)
             - pattern-not: sanitizeHTML(...)
+            - pattern-not: JSON.stringify(...).replace(...)
+            - pattern-not-regex: ^[A-Z][A-Z0-9_]*(\s*\+\s*("[^"]*"|'[^']*'|[A-Z][A-Z0-9_]*))*$
 
   - id: shell-string-exec-go
     message: A command runs through a shell with a built string, so any value in it can inject commands. Call the program directly with an argument list.
