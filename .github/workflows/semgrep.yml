@@ -13,4 +13,8 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install semgrep==1.183.0
-      - run: make test semgrep
+      - uses: jdx/mise-action@90f833d396d0cc3674b631d2d225e306476c303a
+        with:
+          install: false
+      - run: mise run --skip-tools test
+      - run: mise run --skip-tools semgrep

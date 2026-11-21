@@ -3,4 +3,4 @@ pre-push:
     - ref: turbo/*
   jobs:
     - name: check
-      run: make check
+      run: mise run check
