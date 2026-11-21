@@ -71,7 +71,7 @@ semgrep --version
 Add a target to the repository's check command. A Go repository with a Makefile:
 
 ```make
-SEMGREP_RULES := https://raw.githubusercontent.com/versatile-sh/semgrep-rules/v0.1.1/rules/versatile.yml
+SEMGREP_RULES := https://raw.githubusercontent.com/versatile-sh/semgrep-rules/v0.1.2/rules/versatile.yml
 
 semgrep:
 	semgrep scan --metrics=off --disable-version-check --error --severity WARNING --severity ERROR \
