@@ -1,0 +1,203 @@
+rules:
+  - id: hardcoded-credential-go
+    message: A credential is written into the source. Read it from configuration at runtime and keep the value in a secret manager.
+    severity: ERROR
+    languages: [go]
+    metadata:
+      category: security
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+    patterns:
+      - pattern-either:
+          - pattern: $NAME := "$VALUE"
+          - pattern: $NAME = "$VALUE"
+          - pattern: var $NAME = "$VALUE"
+          - pattern: var $NAME $TYPE = "$VALUE"
+          - pattern: const $NAME = "$VALUE"
+          - pattern: |
+              $STRUCT{..., $NAME: "$VALUE", ...}
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: (?i).*(secret|token|passw(or)?d|api_?key|private_?key|client_?secret|credential).*
+      - metavariable-regex:
+          metavariable: $VALUE
+          regex: ^[A-Za-z0-9+/_=.\-]{16,}$
+
+  - id: hardcoded-credential-js
+    message: A credential is written into the source. Read it from configuration at runtime and keep the value in a secret manager.
+    severity: ERROR
+    languages: [typescript, javascript]
+    metadata:
+      category: security
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+    patterns:
+      - pattern-either:
+          - pattern: const $NAME = "$VALUE"
+          - pattern: let $NAME = "$VALUE"
+          - pattern: var $NAME = "$VALUE"
+          - pattern: $OBJ.$NAME = "$VALUE"
+          - pattern: "{..., $NAME: '$VALUE', ...}"
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: (?i).*(secret|token|passw(or)?d|api_?key|private_?key|client_?secret|credential).*
+      - metavariable-regex:
+          metavariable: $VALUE
+          regex: ^[A-Za-z0-9+/_=.\-]{16,}$
+
+  - id: unsanitized-dangerously-set-inner-html-js
+    message: dangerouslySetInnerHTML renders a value that no sanitizer wrapped. Pass it through a sanitizer such as DOMPurify.sanitize at this call, or render text instead of HTML.
+    severity: ERROR
+    languages: [typescript, javascript]
+    metadata:
+      category: security
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation"
+    patterns:
+      - pattern-either:
+          - pattern: "<$EL dangerouslySetInnerHTML={{__html: $HTML}} />"
+          - pattern: "{dangerouslySetInnerHTML: {__html: $HTML}}"
+      - metavariable-pattern:
+          metavariable: $HTML
+          patterns:
+            - pattern-not: "\"...\""
+            - pattern-not: $PURIFY.sanitize(...)
+            - pattern-not: sanitize(...)
+            - pattern-not: sanitizeHtml(...)
+            - pattern-not: sanitizeHTML(...)
+
+  - id: shell-string-exec-go
+    message: A command runs through a shell with a built string, so any value in it can inject commands. Call the program directly with an argument list.
+    severity: ERROR
+    languages: [go]
+    metadata:
+      category: security
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command"
+    patterns:
+      - pattern-either:
+          - pattern: exec.Command($SH, "-c", $CMD, ...)
+          - pattern: exec.CommandContext($CTX, $SH, "-c", $CMD, ...)
+      - metavariable-regex:
+          metavariable: $SH
+          regex: ^"(/bin/|/usr/bin/)?(sh|bash|zsh|dash|ash)"$
+      - metavariable-pattern:
+          metavariable: $CMD
+          patterns:
+            - pattern-not: "\"...\""
+
+  - id: shell-string-exec-js
+    message: A command runs through a shell with a built string, so any value in it can inject commands. Use execFile or spawn with an argument list and no shell option.
+    severity: ERROR
+    languages: [typescript, javascript]
+    metadata:
+      category: security
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command"
+    pattern-either:
+      - patterns:
+          - pattern-either:
+              - patterns:
+                  - pattern-either:
+                      - pattern: $CP.exec($CMD, ...)
+                      - pattern: $CP.execSync($CMD, ...)
+                  - metavariable-regex:
+                      metavariable: $CP
+                      regex: ^(child_process|childProcess|cp)$
+              - patterns:
+                  - pattern-either:
+                      - pattern: exec($CMD, ...)
+                      - pattern: execSync($CMD, ...)
+                  - pattern-either:
+                      - pattern-inside: |
+                          import { ..., exec, ... } from "child_process"
+                          ...
+                      - pattern-inside: |
+                          import { ..., exec, ... } from "node:child_process"
+                          ...
+                      - pattern-inside: |
+                          import { ..., execSync, ... } from "child_process"
+                          ...
+                      - pattern-inside: |
+                          import { ..., execSync, ... } from "node:child_process"
+                          ...
+          - metavariable-pattern:
+              metavariable: $CMD
+              patterns:
+                - pattern-not: "\"...\""
+                - pattern-not: "'...'"
+      - pattern: "$F($CMD, $ARGS, {..., shell: true, ...})"
+      - pattern: "$F($CMD, {..., shell: true, ...})"
+
+  - id: shell-string-exec-py
+    message: A command runs through a shell with a built string, so any value in it can inject commands. Pass an argument list and leave shell at False.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command"
+    patterns:
+      - pattern: subprocess.$FN($CMD, ..., shell=True, ...)
+      - metavariable-pattern:
+          metavariable: $CMD
+          patterns:
+            - pattern-not: "\"...\""
+
+  - id: shell-string-exec-rs
+    message: A command runs through a shell with a built string, so any value in it can inject commands. Run the program directly with Command::new and arg per value.
+    severity: ERROR
+    languages: [rust]
+    metadata:
+      category: security
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command"
+    patterns:
+      - pattern-either:
+          - pattern: Command::new($SH).arg("-c").arg($CMD)
+          - pattern: Command::new($SH).args(["-c", $CMD])
+          - pattern: Command::new($SH).args(&["-c", $CMD])
+      - metavariable-regex:
+          metavariable: $SH
+          regex: ^"(/bin/|/usr/bin/)?(sh|bash|zsh|dash|ash)"$
+      - metavariable-pattern:
+          metavariable: $CMD
+          patterns:
+            - pattern-not: "\"...\""
+
+  - id: logged-request-secrets-go
+    message: A request's headers or body are logged, and they may carry tokens, cookies or personal data. Log the specific fields you need, never the whole headers or body.
+    severity: WARNING
+    languages: [go]
+    metadata:
+      category: security
+      cwe: "CWE-532: Insertion of Sensitive Information into Log File"
+    patterns:
+      - pattern-either:
+          - pattern: $LOG.$METHOD(..., $REQ.Header, ...)
+          - pattern: $LOG.$METHOD(..., $REQ.Header.Get("$H"), ...)
+          - pattern: $LOG.$METHOD(..., $REQ.Body, ...)
+      - metavariable-regex:
+          metavariable: $METHOD
+          regex: ^(Print|Printf|Println|Fatal|Fatalf|Panic|Panicf|Debug|Info|Warn|Error|DebugContext|InfoContext|WarnContext|ErrorContext|Log|LogAttrs|Debugf|Infof|Warnf|Errorf|Trace|Tracef)$
+      - metavariable-regex:
+          metavariable: $LOG
+          regex: ^(log|slog|logger|l|lg|s\.log|s\.logger|h\.log|h\.logger|zap|logrus)$
+      - focus-metavariable: $REQ
+
+  - id: logged-request-secrets-js
+    message: A request's headers or body are logged, and they may carry tokens, cookies or personal data. Log the specific fields you need, never the whole headers or body.
+    severity: WARNING
+    languages: [typescript, javascript]
+    metadata:
+      category: security
+      cwe: "CWE-532: Insertion of Sensitive Information into Log File"
+    patterns:
+      - pattern-either:
+          - pattern: $LOG.$METHOD(..., $REQ.headers, ...)
+          - pattern: $LOG.$METHOD(..., $REQ.headers.$H, ...)
+          - pattern: $LOG.$METHOD(..., $REQ.body, ...)
+          - pattern: "$LOG.$METHOD(..., {..., headers: $REQ.headers, ...}, ...)"
+          - pattern: "$LOG.$METHOD(..., {..., body: $REQ.body, ...}, ...)"
+      - metavariable-regex:
+          metavariable: $LOG
+          regex: ^(console|logger|log|this\.logger|this\.log|ctx\.log|fastify\.log|app\.log|req\.log|request\.log)$
+      - metavariable-regex:
+          metavariable: $METHOD
+          regex: ^(log|info|warn|error|debug|trace|fatal)$
+      - metavariable-regex:
+          metavariable: $REQ
+          regex: ^(req|request|r|ctx\.req|c\.req|ctx\.request|event)$
